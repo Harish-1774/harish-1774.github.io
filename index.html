@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Harish — portfolio, projects, and contact."
+    />
+    <title>Harish | Portfolio</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="nav__brand" href="#top">Harish</a>
+        <button
+          class="nav__toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="nav-menu"
+        >
+          Menu
+        </button>
+        <ul class="nav__menu" id="nav-menu">
+          <li><a href="#about">About</a></li>
+          <li><a href="#projects">Projects</a></li>
+          <li><a href="#skills">Skills</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero section">
+        <p class="hero__eyebrow">Portfolio</p>
+        <h1>Hi, I'm Harish.</h1>
+        <p class="hero__lead">
+          Add a short introduction about who you are, what you build, and what
+          you're looking for.
+        </p>
+        <div class="hero__actions">
+          <a class="button button--primary" href="#projects">View projects</a>
+          <a class="button button--ghost" href="#contact">Get in touch</a>
+        </div>
+      </section>
+
+      <section class="section" id="about">
+        <div class="section__header">
+          <h2>About</h2>
+          <p>Share your background, interests, and what you're working on.</p>
+        </div>
+        <div class="card">
+          <p>
+            Replace this with a few paragraphs about your experience, education,
+            and goals. Keep it concise and easy to scan.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="projects">
+        <div class="section__header">
+          <h2>Projects</h2>
+          <p>Highlight work you're proud of.</p>
+        </div>
+        <div class="grid">
+          <article class="card project-card">
+            <h3>Project title</h3>
+            <p>Brief description of the project and the problem it solves.</p>
+            <ul class="tag-list">
+              <li>Tech</li>
+              <li>Stack</li>
+            </ul>
+            <div class="project-card__links">
+              <a href="#" target="_blank" rel="noreferrer">Live demo</a>
+              <a href="#" target="_blank" rel="noreferrer">Source</a>
+            </div>
+          </article>
+
+          <article class="card project-card">
+            <h3>Another project</h3>
+            <p>Add more project cards by copying this block.</p>
+            <ul class="tag-list">
+              <li>Example</li>
+            </ul>
+            <div class="project-card__links">
+              <a href="#" target="_blank" rel="noreferrer">Live demo</a>
+              <a href="#" target="_blank" rel="noreferrer">Source</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="skills">
+        <div class="section__header">
+          <h2>Skills</h2>
+          <p>Tools and technologies you use.</p>
+        </div>
+        <ul class="tag-list tag-list--large">
+          <li>JavaScript</li>
+          <li>Python</li>
+          <li>HTML &amp; CSS</li>
+          <li>Git</li>
+        </ul>
+      </section>
+
+      <section class="section" id="contact">
+        <div class="section__header">
+          <h2>Contact</h2>
+          <p>Let people know how to reach you.</p>
+        </div>
+        <div class="card contact-card">
+          <p>
+            <a href="mailto:harishs.1774@gmail.com">harishs.1774@gmail.com</a>
+          </p>
+          <p>
+            <a href="https://github.com/Harish-1774" target="_blank" rel="noreferrer"
+              >GitHub</a
+            >
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>&copy; <span id="year"></span> Harish. All rights reserved.</p>
+    </footer>
+
+    <script src="js/main.js"></script>
+  </body>
+</html>
