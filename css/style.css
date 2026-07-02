@@ -267,12 +267,15 @@ main {
 .project-grid {
   display: grid;
   gap: 1.25rem;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 280px));
+  justify-content: center;
 }
 
 .project-preview {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 280px;
   color: inherit;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -332,6 +335,9 @@ main {
 .project-hero-image,
 .project-hero-video {
   width: 100%;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
   border-radius: var(--radius);
   border: 1px solid var(--border);
   margin-bottom: 2rem;
@@ -342,7 +348,8 @@ main {
 .project-hero-video {
   aspect-ratio: 16 / 9;
   object-fit: contain;
-  max-height: min(70vh, 540px);
+  max-height: min(50vh, 405px);
+  height: auto;
 }
 
 .project-page__header {
