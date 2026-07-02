@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Visual pick-and-place with DAgger imitation learning — ResNet18 + LSTM policy trained in Isaac Lab on a Franka sorting task."
+    />
+    <title>Visual Pick and Place | Harish</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <main class="project-page project-page--article">
+      <a class="back-link" href="../index.html#projects">&larr; Back to projects</a>
+
+      <img
+        class="project-hero-image"
+        src="../assets/projects/visual-pick-place.svg"
+        alt="Visual Pick and Place project"
+        width="800"
+        height="500"
+      />
+
+      <header class="project-page__header">
+        <p class="project-card__meta">Imitation Learning · Isaac Lab · Robomimic</p>
+        <h1>Visual Pick and Place</h1>
+        <p class="project-page__intro">
+          A visuomotor Franka Panda policy that sorts coloured cubes into
+          matching bins using only RGB cameras and proprioception. Trained with
+          DAgger (Dataset Aggregation) in Isaac Lab to correct covariate shift,
+          with an IK-based expert oracle providing labels during rollouts.
+        </p>
+      </header>
+
+      <section class="project-page__section">
+        <h2>Task</h2>
+        <p class="project-page__text">
+          A tabletop scene contains a Franka Panda arm, two coloured cubes (blue
+          and red) with randomized poses, and two colour-matched sorting bins in
+          disjoint workspace regions. Two 256×256 RGB cameras provide observations:
+          a fixed table camera for global layout and a wrist camera for grasp
+          alignment.
+        </p>
+        <p class="project-page__text">
+          The student policy must place each cube in its matching bin using only
+          cameras and 18D proprioception. During training, an expert oracle
+          accesses privileged ground-truth object and bin poses — information
+          unavailable at deployment.
+        </p>
+      </section>
+
+      <section class="project-page__section">
+        <h2>The Covariate Shift Problem</h2>
+        <p class="project-page__text">
+          Behavioural cloning on expert demonstrations alone suffers from
+          <strong>distribution shift</strong>. The student executes its own
+          imperfect actions, drifts into states the expert never visited, and
+          small errors compound. DAgger (Dataset Aggregation, Ross et al. 2011)
+          addresses this iteratively by collecting data on the student's actual
+          trajectory while labeling every state with the expert's corrective action.
+        </p>
+      </section>
+
+      <section class="project-page__section">
+        <h2>DAgger Algorithm</h2>
+        <p class="project-page__text">
+          At iteration <em>i</em>, the algorithm:
+        </p>
+        <ol class="mission-list">
+          <li>
+            Rolls out the current student policy in the environment with
+            <strong>β-mixed execution</strong>.
+          </li>
+          <li>
+            Queries the expert oracle for the correct action at every visited
+            state, regardless of who executed the previous action.
+          </li>
+          <li>
+            Appends all <code>(observation, expert_action)</code> pairs to a
+            monotonically growing aggregate dataset.
+          </li>
+          <li>
+            Updates the student with a fixed number of supervised gradient steps
+            on the full aggregate.
+          </li>
+          <li>
+            Saves a new checkpoint and repeats with a lower β.
+          </li>
+        </ol>
+
+        <h3 class="project-page__subheading">β-mixed rollouts</h3>
+        <p class="project-page__text">
+          At each timestep, with probability β the environment executes the
+          expert action; otherwise it executes the student action:
+        </p>
+        <p class="project-page__formula">
+          rollout_action = expert_action &nbsp; if random() &lt; β<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= student_action &nbsp; otherwise
+        </p>
+        <p class="project-page__text">
+          The stored training label is <strong>always</strong> the expert action
+          queried from privileged state. This is the core DAgger insight: learn
+          what the expert <em>would</em> do in states the student actually
+          visits.
+        </p>
+        <p class="project-page__text">
+          β is capped at <strong>0.9</strong> on iteration 1 so the first round
+          is not pure-expert (which would only duplicate the seed dataset). Two
+          schedules are supported:
+        </p>
+        <ul class="bullet-list">
+          <li>
+            <strong>Linear</strong> (used in the 30-iteration run):
+            β = 1 − (i − 1) / N, decreasing from 0.9 to ~0.03 over 30 iterations.
+          </li>
+          <li>
+            <strong>Inverse square root</strong>: β = 1 / √i — a slower decay
+            that keeps more expert assistance in later rounds.
+          </li>
+        </ul>
+
+        <h3 class="project-page__subheading">Expert oracle</h3>
+        <p class="project-page__text">
+          The registered solver <code>ik_pick_place</code> is a privileged,
+          model-based controller — not a learned policy. It:
+        </p>
+        <ul class="bullet-list">
+          <li>
+            Parses ground-truth object and bin poses into colour-matched
+            pick-place pairs.
+          </li>
+          <li>
+            Runs a finite-state machine:
+            APPROACH_PICK → DESCEND_PICK → GRASP → LIFT → APPROACH_PLACE →
+            DESCEND_PLACE → RELEASE → LIFT_AFTER.
+          </li>
+          <li>
+            Tracks TCP waypoints with differential IK (DLS) at 0.75 m/s.
+          </li>
+          <li>
+            Commands a binary gripper with dwell timers (15 steps at grasp, 25
+            at release).
+          </li>
+        </ul>
+        <p class="project-page__text">
+          During DAgger rollouts, pick waypoints are refreshed every pre-grasp
+          step so expert labels track cubes the student may have nudged before
+          grasping.
+        </p>
+
+        <h3 class="project-page__subheading">Dataset aggregation</h3>
+        <p class="project-page__text">
+          The aggregate HDF5 starts as a copy of the seed expert dataset
+          (<code>ik_expert_demos_vis_robomimic.hdf5</code>). Each DAgger
+          episode is appended in Robomimic format with student observations
+          (<code>obs</code>, <code>table_cam</code>, <code>wrist_cam</code>)
+          and expert actions as labels. The dataset grows monotonically — in the
+          completed 30-iteration run it expanded from 85 to 685 demonstrations.
+        </p>
+
+        <h3 class="project-page__subheading">Implementation</h3>
+        <p class="project-page__text">
+          The DAgger loop lives in <code>scripts/train_dagger.py</code>, with
+          rollout collection in <code>dagger_collector.py</code>, HDF5
+          management in <code>dagger_dataset.py</code>, and per-iteration BC
+          training in <code>dagger_trainer.py</code>. Rollouts abort early if
+          the expert makes no progress for 500 steps, preventing the aggregate
+          from filling with low-value stuck trajectories.
+        </p>
+      </section>
+
+      <section class="project-page__section">
+        <h2>Neural Network Architecture</h2>
+        <p class="project-page__text">
+          The student is a Robomimic <strong>BC-RNN</strong> visuomotor policy
+          configured in <code>bc_rnn_image_il.json</code>. The full data flow:
+        </p>
+        <p class="project-page__formula">
+          table_cam (256²) ──► ResNet18 ──► SpatialSoftmax(16 kp) ──► 32D<br />
+          wrist_cam  (256²) ──► ResNet18 ──► SpatialSoftmax(16 kp) ──► 32D<br />
+          proprio (18D) ──► passthrough<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ concat → 82D → LSTM(400) → Linear(400→8)
+        </p>
+
+        <h3 class="project-page__subheading">Visual encoders (×2, separate weights)</h3>
+        <ul class="bullet-list">
+          <li>
+            <strong>Backbone: ResNet18Conv</strong> — standard ResNet-18 with
+            4 residual stages (2 blocks each, 8 blocks total). Trained from
+            scratch (<code>pretrained: false</code>) because Isaac Sim renders
+            differ substantially from ImageNet.
+          </li>
+          <li>
+            <strong>Input:</strong> random 224×224 crop from 256×256 during
+            training (<code>CropRandomizer</code>); CHW float [0, 1] at
+            inference.
+          </li>
+          <li>
+            <strong>Pooling: SpatialSoftmax</strong> with 16 keypoints — maps
+            spatial feature maps to 16 (x, y) coordinates, producing a
+            compact 32D vector per camera that preserves spatial grounding
+            without flattening the entire feature map.
+          </li>
+          <li>
+            <strong>Why two cameras?</strong> The table camera captures bin and
+            object layout globally; the wrist camera provides close-range grasp
+            alignment. Each has its own encoder so the network learns
+            camera-specific features.
+          </li>
+        </ul>
+
+        <h3 class="project-page__subheading">Proprioception (18D)</h3>
+        <p class="project-page__text">
+          Concatenated relative joint positions and velocities for the 7 arm
+          joints plus 2 gripper joints. Proprioception is passed through without
+          an encoder — it gives short-horizon dynamics (velocity, gripper state)
+          that cameras alone cannot provide at 60 Hz control.
+        </p>
+
+        <h3 class="project-page__subheading">LSTM recurrence</h3>
+        <ul class="bullet-list">
+          <li><strong>Type:</strong> LSTM, unidirectional</li>
+          <li><strong>Layers:</strong> 1</li>
+          <li><strong>Hidden dimension:</strong> 400</li>
+          <li><strong>Sequence length:</strong> 10 timesteps</li>
+          <li><strong>Input:</strong> 82D fused vector per timestep (32 + 32 + 18)</li>
+          <li><strong>Mode:</strong> closed-loop (observations fed each step, not open-loop)</li>
+        </ul>
+        <p class="project-page__text">
+          Manipulation is temporally extended — grasp timing, gripper state, and
+          motion history matter. A 10-step LSTM context captures this without
+          the compute cost of a Transformer. One layer keeps the model small
+          enough for real-time inference during Isaac Lab rollouts.
+        </p>
+
+        <h3 class="project-page__subheading">Policy head</h3>
+        <p class="project-page__text">
+          <code>actor_layer_dims: []</code> in the Robomimic config means
+          <strong>no hidden MLP layers</strong> — a single linear map from the
+          400D LSTM hidden state directly to the 8D action output. This keeps
+          the policy lightweight; the representational capacity sits in the
+          ResNet encoders and LSTM rather than a deep action head.
+        </p>
+        <p class="project-page__text">
+          <strong>Action space (8D):</strong> 7 relative arm joint position
+          deltas + 1 binary gripper command. Relative actions match the expert
+          demonstration format and generalize better across joint configurations
+          than absolute joint targets.
+        </p>
+
+        <h3 class="project-page__subheading">Layer count summary</h3>
+        <ul class="bullet-list">
+          <li>2 × ResNet18 visual backbones (independent weights)</li>
+          <li>2 × SpatialSoftmax pooling layers (16 keypoints each)</li>
+          <li>1 × LSTM layer (400 hidden units)</li>
+          <li>1 × linear output layer (400 → 8)</li>
+          <li>No additional hidden MLP between LSTM and output</li>
+        </ul>
+      </section>
+
+      <section class="project-page__section">
+        <h2>Training Process</h2>
+
+        <h3 class="project-page__subheading">Phase 1 — Expert seed demonstrations</h3>
+        <p class="project-page__text">
+          Before DAgger, visuomotor expert trajectories are collected with the
+          IK solver. Only successful episodes (both cubes in matching bins) are
+          saved. Observations include proprioception, <code>table_cam</code>,
+          and <code>wrist_cam</code> — the same keys the student uses at
+          deployment. The HDF5 is restructured into Robomimic format to produce
+          the seed dataset.
+        </p>
+
+        <h3 class="project-page__subheading">Phase 2 — Behavioural cloning warm-start</h3>
+        <p class="project-page__text">
+          DAgger requires an initial policy checkpoint capable of producing
+          coherent (if imperfect) rollouts. A BC-RNN policy is trained on the
+          seed dataset via Robomimic's standard training script. This warm-start
+          checkpoint becomes the student for DAgger iteration 1.
+        </p>
+
+        <h3 class="project-page__subheading">Phase 3 — DAgger iterations</h3>
+        <p class="project-page__text">
+          Each iteration performs three steps:
+        </p>
+        <ol class="mission-list">
+          <li>
+            <strong>Collect rollouts</strong> — 20 episodes (default) with the
+            current checkpoint, β-mixed execution, expert relabeling on every
+            step. Max horizon 2500 steps (~42 s at 60 Hz control).
+          </li>
+          <li>
+            <strong>Append to aggregate</strong> — labeled episodes written to
+            the growing HDF5. Failures are included; expert labels remain valid
+            corrections even on unsuccessful trajectories.
+          </li>
+          <li>
+            <strong>Train</strong> — 5000 BC gradient steps on the entire
+            aggregate dataset. Weights warm-start from the previous iteration's
+            checkpoint. New checkpoint saved as <code>dagger_iter_N.pth</code>.
+          </li>
+        </ol>
+
+        <h3 class="project-page__subheading">Hyperparameters</h3>
+        <ul class="bullet-list">
+          <li><strong>DAgger iterations:</strong> 30 (completed run)</li>
+          <li><strong>Episodes per iteration:</strong> 20</li>
+          <li><strong>Gradient steps per iteration:</strong> 5000</li>
+          <li><strong>Rollout horizon:</strong> 2500 steps</li>
+          <li><strong>β schedule:</strong> linear, β_start = 0.9</li>
+          <li><strong>Loss:</strong> L2 on actions (deterministic regression; expert is near-deterministic)</li>
+          <li><strong>Optimizer:</strong> Adam, learning rate 1×10⁻⁴</li>
+          <li><strong>Batch size:</strong> 32 (config default)</li>
+          <li><strong>Sequence length:</strong> 10 (aligned with LSTM horizon)</li>
+          <li><strong>Control rate:</strong> 60 Hz (120 Hz sim, decimation 2)</li>
+          <li><strong>Episode timeout:</strong> 45 s</li>
+        </ul>
+
+        <h3 class="project-page__subheading">Data loading</h3>
+        <p class="project-page__text">
+          Proprioception is cached in memory (<code>hdf5_cache_mode: low_dim</code>)
+          while RGB images are streamed from disk. This keeps RAM usage manageable
+          as the aggregate dataset grows with image data across iterations. Random
+          224×224 crops from 256×256 images provide mild augmentation during
+          training.
+        </p>
+
+        <h3 class="project-page__subheading">Training results (30-iteration run)</h3>
+        <ul class="bullet-list">
+          <li>
+            Aggregate dataset grew from <strong>85 → 685</strong> demonstrations
+            (+20 per iteration).
+          </li>
+          <li>
+            L2 training loss decreased from <strong>0.0045</strong> (iter 1) to
+            <strong>0.0014</strong> (iter 7), then rose as more on-policy
+            failure data accumulated at low β.
+          </li>
+          <li>
+            Rollout success rate stayed at <strong>18–20 / 20</strong> while β
+            ≥ 0.5, then dropped as student execution dominated (0 / 20 at
+            iterations 24–30 when β ≈ 0.03).
+          </li>
+          <li>
+            Each 5000-step training phase took ~10 s on GPU.
+          </li>
+        </ul>
+        <p class="project-page__text">
+          The late-iteration success drop reflects the intentional shift toward
+          fully on-policy rollouts: the student visits harder states without
+          expert intervention, providing corrective labels for those regions in
+          the aggregate even when episodes fail.
+        </p>
+      </section>
+
+      <section class="project-page__section">
+        <h2>Technologies</h2>
+        <ul class="tag-list tag-list--large">
+          <li>Isaac Lab</li>
+          <li>Isaac Sim</li>
+          <li>Robomimic</li>
+          <li>PyTorch</li>
+          <li>DAgger</li>
+          <li>ResNet18</li>
+          <li>LSTM</li>
+          <li>Franka Panda</li>
+          <li>Differential IK</li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Bachelor's thesis on pursuit-based guidance for multi-agent formation control using APF, DDP, Crazyflie, and Crazyswarm."
+    />
+    <title>Pursuit Based Guidance for Multi-Agent Formation Control | Harish</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <main class="project-page project-page--article">
+      <a class="back-link" href="../index.html#projects">&larr; Back to projects</a>
+
+      <video
+        class="project-hero-video"
+        controls
+        playsinline
+        preload="metadata"
+      >
+        <source
+          src="../assets/projects/MultiAgentFormation.mp4"
+          type="video/mp4"
+        />
+        Your browser does not support the video tag.
+      </video>
+
+      <header class="project-page__header">
+        <p class="project-card__meta">
+          B.Tech Project · IIT Madras · Guide: Dr. Satadal Ghosh · June 2025
+        </p>
+        <h1>Pursuit Based Guidance for Multi-Agent Formation Control</h1>
+        <p class="project-page__intro">
+          A hybrid drone formation control system combining Artificial Potential
+          Field (APF) for formation generation and collision avoidance with
+          Detective Deviated Pursuit (DDP) for efficient leader-follower
+          tracking — implemented and validated on seven Crazyflie 2.1 drones
+          using Crazyswarm and ROS.
+        </p>
+      </header>
+
+      <section class="project-page__section">
+        <h2>Abstract</h2>
+        <p class="project-page__text">
+          This project presents the development and implementation of a multi-agent
+          drone formation control system based on the Crazyflie platform and the
+          Crazyswarm ROS framework. The system facilitates coordinated flight of
+          seven quadrotor drones within a constrained workspace, achieving precise
+          formation control and collision avoidance.
+        </p>
+        <p class="project-page__text">
+          A global planner manages formation dynamics, while collision avoidance is
+          accomplished using Artificial Potential Field (APF) methods. To optimize
+          responsiveness and reduce computational overhead, Detective Deviated
+          Pursuit (DDP) is integrated, enabling drones to infer and track dynamic or
+          virtual targets based on observed relative motion changes.
+        </p>
+        <p class="project-page__text">
+          The effectiveness of this hybrid control architecture is validated through
+          successful formation of the drones into predefined letter shapes
+          (<strong>I</strong>, <strong>T</strong>, <strong>M</strong>) and lateral
+          movement, with consistent results demonstrated in both simulation and
+          real-world flight experiments.
+        </p>
+      </section>
+
+      <section class="project-page__section">
+        <h2>Research Objectives</h2>
+        <p class="project-page__text">
+          The primary objective was to develop and validate a multi-agent drone
+          formation control framework that:
+        </p>
+        <ul class="bullet-list">
+          <li>
+            Enables autonomous UAVs to self-organize from arbitrary initial
+            positions into predefined geometric formations using APF methods.
+          </li>
+          <li>
+            Utilizes DDP for efficient leader-follower-based formation tracking and
+            task execution with minimal computational cost.
+          </li>
+          <li>
+            Demonstrates the hybrid strategy through simulation and physical
+            experiments on the Crazyflie 2.1 nano drone platform.
+          </li>
+          <li>
+            Ensures inter-agent collision avoidance, accurate trajectory tracking,
+            and formation stability in constrained environments.
+          </li>
+          <li>
+            Provides a scalable control architecture extensible to outdoor and
+            obstacle-rich deployments.
+          </li>
+        </ul>
+      </section>
+
+      <section class="project-page__section">
+        <h2>Hybrid Control Architecture</h2>
+        <p class="project-page__text">
+          Formation control problems can be divided into three tasks: formation
+          generation (guiding agents from random positions into a desired topology),
+          formation maintenance (preserving relative configuration during motion),
+          and formation reconfiguration (adapting to disruptions or new goals).
+        </p>
+        <p class="project-page__text">
+          DDP is a pursuit-based leader-follower method with low per-agent
+          computational complexity, but it assumes an already-formed configuration.
+          APF handles initial formation generation and collision avoidance well, but
+          carries higher computational cost. This project integrates both:
+        </p>
+        <ul class="bullet-list">
+          <li>
+            <strong>APF</strong> — used to form letter configurations and return
+            drones to standby positions after lateral maneuvers.
+          </li>
+          <li>
+            <strong>DDP</strong> — used to translate formed shapes laterally across
+            the workspace while maintaining inter-agent spacing.
+          </li>
+        </ul>
+      </section>
+
+      <section class="project-page__section">
+        <h2>Detective Deviated Pursuit (DDP)</h2>
+        <p class="project-page__text">
+          DDP allows a follower to maintain a constant distance from a leader while
+          deviating its velocity vector by a fixed angular offset relative to the
+          line of sight (LOS). Unlike interception guidance, DDP emphasizes
+          formation keeping by enforcing a fixed range.
+        </p>
+
+        <h3 class="project-page__subheading">One-follower configuration</h3>
+        <p class="project-page__text">
+          For a leader <em>L</em> and follower <em>F</em>, with leader speed
+          <em>V<sub>L</sub></em>, follower speed <em>V<sub>F</sub></em>, range
+          <em>r</em>, LOS angle <em>λ</em>, leader heading offset
+          <em>θ</em>, and constant deviation angle <em>δ</em>:
+        </p>
+        <ul class="bullet-list">
+          <li>
+            <strong>Detective condition</strong> (constant range):
+            ṙ = 0 ⇒ V<sub>L</sub> cos θ − V<sub>F</sub> cos δ = 0
+          </li>
+          <li>
+            <strong>Deviation condition</strong> (fixed LOS offset):
+            λ̇ = (1/r)(V<sub>L</sub> sin θ − V<sub>F</sub> sin δ)
+          </li>
+        </ul>
+        <p class="project-page__text">
+          Path angles relate as γ<sub>L</sub> = θ + λ and
+          γ<sub>F</sub> = δ + λ. If the leader flies straight (γ̇<sub>L</sub> = 0),
+          then θ = δ.
+        </p>
+
+        <h3 class="project-page__subheading">Multi-follower extension</h3>
+        <p class="project-page__text">
+          For N followers, the framework extends recursively using local interactions
+          between consecutive agents. Setting the range rate to zero for follower
+          N gives the required velocity:
+        </p>
+        <p class="project-page__formula">
+          V<sub>F<sub>N</sub></sub> = V<sub>F<sub>N−1</sub></sub>
+          cos(δ<sub>N−1</sub> − ε<sub>N−1</sub>) / cos(δ<sub>N</sub>)
+        </p>
+        <p class="project-page__text">
+          This recursive formulation scales to larger formations using only local
+          neighbor information.
+        </p>
+
+        <h3 class="project-page__subheading">MATLAB validation</h3>
+        <p class="project-page__text">
+          Simulations were run for one-, two-, and three-follower configurations with
+          leader speed 1 m/s and angular velocities of 3°/s, 0.1 rad/s, and 0.06
+          rad/s respectively. Inter-agent distances remained consistent throughout,
+          validating DDP stability under varying motion dynamics.
+        </p>
+      </section>
+
+      <section class="project-page__section">
+        <h2>Artificial Potential Field (APF) Avoidance</h2>
+        <p class="project-page__text">
+          APF provides a local, reactive policy for each agent to reach its target
+          while avoiding nearby agents. For agent A<sub>i</sub> at position
+          <strong>x</strong><sub>i</sub> targeting
+          <strong>x</strong><sup>target</sup><sub>i</sub>, if neighbor
+          A<sub>j</sub> enters collision radius r<sub>c</sub>, a repulsive term is
+          added.
+        </p>
+        <ul class="bullet-list">
+          <li>
+            <strong>Attraction to target:</strong> velocity toward the goal, scaled
+            to v<sub>max</sub>, zero within goal tolerance ε<sub>t</sub>.
+          </li>
+          <li>
+            <strong>Repulsive avoidance:</strong> if ‖<strong>r</strong><sub>ij</sub>‖
+            &lt; r<sub>c</sub>, add a repulsive velocity opposite the relative
+            position vector.
+          </li>
+          <li>
+            <strong>Speed constraint:</strong> resultant velocity is clipped to
+            v<sub>max</sub>.
+          </li>
+        </ul>
+        <p class="project-page__text">
+          Total commanded velocity:
+          <strong>v</strong><sub>i</sub> =
+          <strong>v</strong><sup>target</sup><sub>i</sub> +
+          Σ<sub>j≠i</sub> <strong>v</strong><sup>avoid</sup><sub>ij</sub>
+        </p>
+
+        <h3 class="project-page__subheading">Python validation</h3>
+        <p class="project-page__text">
+          Six agents were simulated in a 2 × 2 m² workspace with random initial and
+          target positions. Parameters: v<sub>max</sub> = 0.1 m/s, collision
+          threshold r<sub>c</sub> = 0.28 m. Agents followed straight paths when
+          isolated and dynamically routed around neighbors when within the collision
+          radius.
+        </p>
+      </section>
+
+      <section class="project-page__section">
+        <h2>Mission Design</h2>
+        <p class="project-page__text">
+          Seven Crazyflie drones sequentially form the letters
+          <strong>I</strong>, <strong>I</strong>, <strong>T</strong>, and
+          <strong>M</strong> in a horizontal plane, then perform lateral translation
+          for each shape.
+        </p>
+        <ol class="mission-list">
+          <li>
+            <strong>Takeoff</strong> — all seven drones ascend from ground positions.
+          </li>
+          <li>
+            <strong>Formation I (×2)</strong> — three drones form a vertical line;
+            four hover in standby. The formation translates laterally, deforms, and
+            returns. This sequence repeats once.
+          </li>
+          <li>
+            <strong>Formation T</strong> — five drones form a T shape, translate
+            laterally, then return via APF.
+          </li>
+          <li>
+            <strong>Formation M</strong> — all seven drones form an M, translate
+            laterally, then return.
+          </li>
+          <li>
+            <strong>Landing</strong> — all drones land simultaneously.
+          </li>
+        </ol>
+        <p class="project-page__text">
+          APF forms each letter configuration and handles return
+          maneuvers; DDP drives lateral translation while preserving formation
+          geometry.
+        </p>
+      </section>
+
+      <section class="project-page__section">
+        <h2>Hardware &amp; Software Setup</h2>
+
+        <h3 class="project-page__subheading">Crazyflie 2.1 + Lighthouse positioning</h3>
+        <p class="project-page__text">
+          The Crazyflie is an open-source nano quadrotor from Bitcraze AB, widely
+          used in research for its modular deck architecture. This project uses the
+          Lighthouse Deck, which receives sweeping IR laser beams from Lighthouse
+          Base Stations and estimates 3D position via onboard photodiodes. Four base
+          stations were deployed for high-accuracy indoor localization, feeding
+          position data into the formation control algorithm.
+        </p>
+
+        <h3 class="project-page__subheading">Crazyswarm</h3>
+        <p class="project-page__text">
+          Crazyswarm provides the software stack for coordinating multiple
+          Crazyflies — built on the Crazyflie firmware with support for Lighthouse
+          (or motion capture) tracking. It handles low-level flight control, state
+          estimation, and synchronized multi-agent command broadcasting. High-level
+          navigation and swarm coordination logic were implemented separately on top
+          of its Python API.
+        </p>
+
+        <h3 class="project-page__subheading">ROS 2 middleware</h3>
+        <p class="project-page__text">
+          ROS served as the communication middleware. A <code>FormationControl</code>
+          node subscribes to per-drone <code>PoseStamped</code> topics, computes
+          guidance commands, and broadcasts setpoints via Crazyswarm's
+          <code>goTo</code> interface. A multi-threaded executor runs a background
+          spin thread for continuous pose updates while the main thread executes the
+          mission sequence.
+        </p>
+      </section>
+
+      <section class="project-page__section">
+        <h2>Implementation</h2>
+
+        <h3 class="project-page__subheading">Software architecture</h3>
+        <ul class="bullet-list">
+          <li>
+            <code>main()</code> initializes Crazyswarm and a
+            <code>FormationControl</code> ROS node on a multi-threaded executor.
+          </li>
+          <li>
+            Pose subscribers receive real-time position and orientation for each
+            drone; quaternion data is converted to Euler angles for DDP kinematics.
+          </li>
+          <li>
+            <code>takeoff()</code> / <code>land()</code> use the
+            <code>allcfs</code> interface for synchronized swarm commands.
+          </li>
+          <li>
+            Mission flow calls <code>formI/T/M</code>, <code>moveI/T/M</code>, and
+            <code>returnI/T/M</code> sequentially with timed pauses between phases.
+          </li>
+        </ul>
+
+        <h3 class="project-page__subheading">Formation generation (APF)</h3>
+        <p class="project-page__text">
+          Functions <code>formI</code>, <code>formT</code>, and <code>formM</code>
+          simulate all seven agents in a loop using APF velocities. Key parameters:
+        </p>
+        <ul class="bullet-list">
+          <li>Time step dt = 0.05 s</li>
+          <li>Maximum speed = 0.3 m/s</li>
+          <li>Collision radius = 0.28 m</li>
+          <li>Goal tolerance = 0.01 m</li>
+        </ul>
+        <p class="project-page__text">
+          Computed trajectories are downsampled and sent to each Crazyflie via
+          <code>goTo</code> position setpoints at 1 m altitude.
+        </p>
+
+        <h3 class="project-page__subheading">Lateral motion (DDP)</h3>
+        <p class="project-page__text">
+          Functions <code>moveI</code>, <code>moveT</code>, and <code>moveM</code>
+          numerically integrate the DDP kinematic equations using
+          <code>solve_ivp</code> (SciPy). Each formation has dedicated kinematics
+          functions encoding leader-follower geometry, deviation angles δ, and
+          inter-LOS angles ε for all followers.
+        </p>
+        <p class="project-page__text">
+          For I and M formations where the leader is collinear with followers, a
+          positive offset is applied to the leader position along its velocity
+          direction so relative position computations remain well-defined.
+        </p>
+        <p class="project-page__text">
+          Leader speed V<sub>L</sub> = 0.3 m/s. Integration runs over 5–6 s with
+          101 evaluation points; each solution step is streamed to drones at 0.06 s
+          intervals via <code>goTo</code>.
+        </p>
+
+        <h3 class="project-page__subheading">Return maneuvers</h3>
+        <p class="project-page__text">
+          After lateral motion, formations collapse and drones return to standby
+          corners using the same APF guidance law (<code>returnI/T/M</code>),
+          preparing the swarm for the next letter configuration.
+        </p>
+      </section>
+
+      <section class="project-page__section">
+        <h2>Results</h2>
+        <p class="project-page__text">
+          Flight experiments successfully demonstrated:
+        </p>
+        <ul class="bullet-list">
+          <li>
+            Formation <strong>I</strong> with 3 active drones and 4 in standby hover.
+          </li>
+          <li>
+            Formation <strong>T</strong> with 5 active drones and 2 in standby.
+          </li>
+          <li>
+            Formation <strong>M</strong> using all 7 drones simultaneously.
+          </li>
+          <li>
+            Lateral translation of each formation across the workspace with shape
+            preserved via DDP.
+          </li>
+          <li>
+            Collision-free transitions between formations using APF repulsive fields.
+          </li>
+        </ul>
+        <p class="project-page__text">
+          Both MATLAB/Python simulations and real Crazyflie flights validated the
+          hybrid APF + DDP architecture. The approach balances computational
+          efficiency (DDP) with robust formation generation and avoidance (APF).
+        </p>
+      </section>
+
+      <section class="project-page__section">
+        <h2>Conclusion &amp; Future Work</h2>
+        <p class="project-page__text">
+          This project demonstrates a real-time multi-agent drone formation control
+          system on the Crazyflie platform using Crazyswarm and ROS. Integrating APF
+          for collision avoidance with DDP for pursuit-based formation tracking
+          achieves reliable coordination among seven quadrotors in a constrained
+          indoor environment.
+        </p>
+        <p class="project-page__text">Planned extensions include:</p>
+        <ul class="bullet-list">
+          <li>
+            <strong>Leader-independent DDP</strong> — decentralized virtual-leader
+            variants for resilience to single-point failures.
+          </li>
+          <li>
+            <strong>Obstacle-rich environments</strong> — real-time obstacle
+            detection beyond the open-workspace assumption.
+          </li>
+          <li>
+            <strong>Outdoor GPS deployment</strong> — for search-and-rescue,
+            agriculture, and infrastructure inspection.
+          </li>
+          <li>
+            <strong>Heterogeneous agent coordination</strong> — mixed platforms
+            with different sensing and actuation capabilities.
+          </li>
+          <li>
+            <strong>Energy-aware path planning</strong> — incorporating power
+            constraints into formation and movement decisions.
+          </li>
+        </ul>
+      </section>
+
+      <section class="project-page__section">
+        <h2>Technologies</h2>
+        <ul class="tag-list tag-list--large">
+          <li>Crazyflie 2.1</li>
+          <li>Crazyswarm</li>
+          <li>ROS 2</li>
+          <li>Lighthouse Positioning</li>
+          <li>Python</li>
+          <li>MATLAB</li>
+          <li>SciPy</li>
+          <li>APF</li>
+          <li>DDP</li>
+          <li>Multi-Agent Systems</li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>

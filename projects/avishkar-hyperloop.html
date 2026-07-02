@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Avishkar Hyperloop — CFD drag analysis, connected tube patent, and mechanical leadership at European Hyperloop Week 2024."
+    />
+    <title>Avishkar Hyperloop | Harish</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <main class="project-page project-page--article">
+      <a class="back-link" href="../index.html#projects">&larr; Back to projects</a>
+
+      <img
+        class="project-hero-image"
+        src="../assets/projects/hyperloop.svg"
+        alt="Avishkar Hyperloop project"
+        width="800"
+        height="500"
+      />
+
+      <header class="project-page__header">
+        <p class="project-card__meta">IIT Madras · European Hyperloop Week 2024</p>
+        <h1>Avishkar Hyperloop</h1>
+        <p class="project-page__intro">
+          Work on IIT Madras's Hyperloop pod across two roles — first as an
+          aerodynamics team member studying tube-configuration drag through CFD,
+          then as Mechanical Lead coordinating the team and authoring technical
+          research on shock-wave behaviour in Hyperloop systems. The pod
+          represented IIT Madras and India at European Hyperloop Week 2024 in
+          Zurich, securing 2nd place in the research category.
+        </p>
+      </header>
+
+      <section class="project-page__section">
+        <h2>Aerodynamics Team Member</h2>
+        <p class="project-card__meta">Mar 2023 – Aug 2023</p>
+
+        <p class="project-page__text">
+          Hyperloop pods operate inside partially evacuated tubes, and the
+          geometry of that tube strongly influences aerodynamic drag — often the
+          dominant energy cost at transonic speeds. A conventional single-tube
+          layout leaves the pod surrounded by a long column of air that must be
+          displaced and accelerated as the vehicle moves. We investigated
+          whether a <strong>connected tube configuration</strong>, where the
+          pod travels through a tube that is vented or coupled differently along
+          its length, could reduce that penalty.
+        </p>
+        <p class="project-page__text">
+          I ran dynamic CFD simulations in Ansys Fluent across multiple
+          pod–tube configurations, varying flow conditions to compare drag on
+          the same pod geometry in a standard tube versus the connected-tube
+          arrangement. At 0.4 Mach, the connected configuration showed a
+          <strong>56% reduction in drag</strong> relative to the single-tube
+          baseline — a substantial improvement for a system where even modest
+          drag savings translate directly into lower propulsion power and
+          operating cost.
+        </p>
+        <p class="project-page__text">
+          The results were strong enough to pursue intellectual property
+          protection: a <strong>patent has been filed</strong> on the connected
+          tube configuration as a novel approach for Hyperloop systems. The
+          simulation below illustrates the flow behaviour studied during this
+          work.
+        </p>
+
+        <video
+          class="project-hero-video"
+          controls
+          playsinline
+          preload="metadata"
+        >
+          <source
+            src="../assets/projects/1000144583.mp4"
+            type="video/mp4"
+          />
+          Your browser does not support the video tag.
+        </video>
+      </section>
+
+      <section class="project-page__section">
+        <h2>Mechanical Lead</h2>
+        <p class="project-card__meta">Aug 2023 – Jul 2024</p>
+
+        <p class="project-page__text">
+          As Mechanical Lead, I was responsible for the human and operational
+          side of building the pod as much as the engineering itself — recruiting
+          new team members, coordinating procurement of materials and
+          components, and keeping the mechanical workstream on schedule ahead of
+          competition deadlines. Alongside that management role, I continued to
+          contribute technically to the pod's aerodynamic and structural story.
+        </p>
+        <p class="project-page__text">
+          A central piece of my research was an analysis of
+          <strong>shock waves in Hyperloop systems</strong>. When a pod
+          accelerates inside a near-vacuum tube, it can drive compressible flow
+          phenomena — including shock structures and shock–boundary-layer
+          interaction (SBLI) — that create unsteady turbulence in the
+          acceleration phase. Our work showed that turbulence arising from SBLI
+          during acceleration propagates backward along the tube and eventually
+          settles into a steady state, which has direct implications for tube
+          sizing, pressure management, and passenger comfort. I authored the
+          technical report on this topic, which formed part of the full-scale
+          technical submission for the competition.
+        </p>
+        <p class="project-page__text">
+          That report was presented at
+          <strong>European Hyperloop Week 2024</strong> in Zurich, Switzerland,
+          where Avishkar Hyperloop placed <strong>2nd</strong> in the research
+          category, representing IIT Madras and India on an international stage.
+        </p>
+        <p class="project-page__text">
+          <a
+            href="https://drive.google.com/file/d/1-24kYN9Q1KpxqbzOXlkt7Xycq7Ue_CcZ/view?usp=sharing"
+            target="_blank"
+            rel="noreferrer"
+            >Read the full technical report (Avishkar Hyperloop FRS — Technical Aspects)</a
+          >
+        </p>
+        <p class="project-page__text">
+          On the structural side, the team engineered the pod's chassis and
+          aerodynamic shell with Ansys Mechanical, targeting deformations below
+          0.5 mm under load so the outer shape — and therefore the aerodynamic
+          performance we had worked hard to optimize — would hold in real
+          operating conditions.
+        </p>
+      </section>
+
+      <section class="project-page__section">
+        <h2>Technologies</h2>
+        <ul class="tag-list tag-list--large">
+          <li>Ansys Fluent</li>
+          <li>Ansys Mechanical</li>
+          <li>CFD</li>
+          <li>Hyperloop</li>
+          <li>Patent</li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>

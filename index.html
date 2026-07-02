@@ -7,13 +7,13 @@
       name="description"
       content="Harish S — Aerospace Engineer building robotics software, automation systems, and simulation tools."
     />
-    <title>Harish S | Portfolio</title>
+    <title>Harish | Portfolio</title>
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <header class="site-header">
+    <!-- <header class="site-header">
       <nav class="nav" aria-label="Main navigation">
-        <a class="nav__brand" href="#top">Harish S</a>
+        <a class="nav__brand" href="#top">Harish</a>
         <button
           class="nav__toggle"
           type="button"
@@ -30,24 +30,30 @@
           <li><a href="#contact">Contact</a></li>
         </ul>
       </nav>
-    </header>
+    </header> -->
 
     <main id="top">
       <section class="hero section">
-        <p class="hero__eyebrow">Aerospace Engineer · Robotics Software</p>
-        <h1>Hi, I'm Harish S.</h1>
+        <p class="hero__eyebrow">Robotics . Physical AI</p>
+        <h1>Hi, I'm Harish.</h1>
         <p class="hero__lead">
-          I build robotics software stacks, factory automation systems, and
-          simulation-driven tools. Currently at Robotspace, working on linear
-          robots, production planning, and manufacturing optimization.
+          I build robotics software stacks, test them in simulation, and deploy them in the real world. 
+          At Robotspace, I work on Linear Robots, Production Planning, and Manufacturing Optimization.
         </p>
-        <div class="hero__actions">
+        <!-- <div class="hero__actions">
           <a class="button button--primary" href="#projects">View projects</a>
           <a class="button button--ghost" href="#contact">Get in touch</a>
-        </div>
+        </div> -->
       </section>
 
-      <section class="section" id="about">
+      <!-- <section class="section" id="about">
+        <div class="section__header">
+          <h2>About</h2>
+          <p>I'm an engineer with a passion for building great robots. Started with aerodynamics and got into drones. Got interested in building robots.</p>
+        </div>
+      </section> -->
+
+      <!-- <section class="section" id="about">
         <div class="section__header">
           <h2>About</h2>
           <p>Education and highlights from my work in aerospace and robotics.</p>
@@ -91,9 +97,9 @@
             </ul>
           </article>
         </div>
-      </section>
+      </section> -->
 
-      <section class="section" id="experience">
+      <!-- <section class="section" id="experience">
         <div class="section__header">
           <h2>Experience</h2>
           <p>Professional work in robotics and manufacturing automation.</p>
@@ -133,189 +139,57 @@
             </li>
           </ul>
         </article>
-      </section>
+      </section> -->
 
       <section class="section" id="projects">
         <div class="section__header">
           <h2>Projects</h2>
-          <p>Research, robotics, and competition work from IIT Madras and beyond.</p>
+          <p>Including research work and competitions at IIT Madras</p>
         </div>
 
-        <div class="grid">
-          <article class="card project-card">
-            <p class="project-card__meta">Imitation Learning · Isaac Lab</p>
-            <h3>Visual Pick and Place</h3>
-            <ul class="bullet-list">
-              <li>
-                Implemented DAgger training for a colour-based pick-and-place task
-                with a Franka robot in Isaac Lab.
-              </li>
-              <li>
-                Mapped camera input to joint-angle output using a
-                ResNet18 + LSTM + MLP network.
-              </li>
-              <li>
-                Trained the simulation for 30 iterations with 20 rollouts and
-                5000 steps each.
-              </li>
-            </ul>
-            <ul class="tag-list">
-              <li>Isaac Lab</li>
-              <li>PyTorch</li>
-              <li>Imitation Learning</li>
-            </ul>
-          </article>
+        <div class="project-grid">
+          <a class="project-preview" href="projects/visual-pick-and-place.html">
+            <div class="project-preview__media">
+              <img
+                class="project-preview__image"
+                src="assets/projects/visual-pick-place.svg"
+                alt="Visual Pick and Place"
+              />
+            </div>
+            <div class="project-preview__body">
+              <h3 class="project-preview__title">Visual Pick and Place</h3>
+            </div>
+          </a>
 
-          <article class="card project-card">
-            <p class="project-card__meta">Bachelor's Thesis · Guide: Satadal G</p>
-            <h3>Multi-Agent Formation Control</h3>
-            <ul class="bullet-list">
-              <li>
-                Analyzed guidance algorithms for multi-agent formation control
-                using MAVROS and Gazebo.
-              </li>
-              <li>
-                Implemented and verified the Detective Deviated Pursuit algorithm
-                in MATLAB.
-              </li>
-              <li>
-                Used Crazyflie 2.1 drones with a Lighthouse positioning system to
-                implement formation algorithms.
-              </li>
-            </ul>
-            <ul class="tag-list">
-              <li>ROS2</li>
-              <li>Gazebo</li>
-              <li>MAVROS</li>
-            </ul>
-          </article>
 
-          <article class="card project-card">
-            <p class="project-card__meta">Mechanical Head · Aug 2023 – Jul 2024</p>
-            <h3>Avishkar Hyperloop</h3>
-            <ul class="bullet-list">
-              <li>
-                Led a team of 8 to engineer and build the mechanical systems of
-                the Hyperloop pod.
-              </li>
-              <li>
-                Secured 2nd place at European Hyperloop Week in Zurich,
-                Switzerland.
-              </li>
-              <li>
-                Proved turbulence due to SBLI in the acceleration phase travels
-                backward and becomes steady.
-              </li>
-              <li>
-                Ran structural simulations to keep chassis and aerodynamic shell
-                deformation below 0.5 mm.
-              </li>
-            </ul>
-            <ul class="tag-list">
-              <li>Ansys Mechanical</li>
-              <li>CFD</li>
-              <li>Hyperloop</li>
-            </ul>
-          </article>
 
-          <article class="card project-card">
-            <p class="project-card__meta">Project Member · Mar 2023 – Aug 2023</p>
-            <h3>Avishkar Hyperloop — CFD &amp; Patent</h3>
-            <ul class="bullet-list">
-              <li>
-                Performed dynamic CFD simulations on pod–tube configurations to
-                analyze drag variation.
-              </li>
-              <li>
-                Observed a 56% drag reduction at 0.4 Mach in a connected tube
-                configuration versus a single tube.
-              </li>
-              <li>
-                Filed a patent on the connected tube configuration for Hyperloop
-                systems.
-              </li>
-            </ul>
-            <ul class="tag-list">
-              <li>Ansys Fluent</li>
-              <li>CFD</li>
-              <li>Patent</li>
-            </ul>
-          </article>
-
-          <article class="card project-card">
-            <p class="project-card__meta">Project Head · May 2023 – Mar 2024</p>
-            <h3>Aero Club — Search &amp; Aid QuadPlane</h3>
-            <ul class="bullet-list">
-              <li>
-                Headed a team of 5 to design a QuadPlane for search-and-aid
-                operations over the ocean.
-              </li>
-              <li>
-                Developed Python scripts integrating MAVROS with ArduPilot SITL
-                and Gazebo.
-              </li>
-              <li>
-                Used OpenCV to detect subjects needing help and determine the
-                required flight direction.
-              </li>
-            </ul>
-            <ul class="tag-list">
-              <li>MAVROS</li>
-              <li>Gazebo</li>
-              <li>OpenCV</li>
-            </ul>
-          </article>
-        </div>
-      </section>
-
-      <section class="section" id="skills">
-        <div class="section__header">
-          <h2>Skills</h2>
-          <p>Tools and languages I use across robotics, simulation, and design.</p>
+          <a class="project-preview" href="projects/formation-control.html">
+            <div class="project-preview__media">
+              <img
+                class="project-preview__image"
+                src="assets/projects/formation-control.svg"
+                alt="Multi-Agent Formation Control"
+              />
+            </div>
+            <div class="project-preview__body">
+              <h3 class="project-preview__title">Multi-Agent Formation Control</h3>
+            </div>
+          </a>
+          <a class="project-preview" href="projects/avishkar-hyperloop.html">
+            <div class="project-preview__media">
+              <img
+                class="project-preview__image"
+                src="assets/projects/hyperloop.svg"
+                alt="Avishkar Hyperloop"
+              />
+            </div>
+            <div class="project-preview__body">
+              <h3 class="project-preview__title">Avishkar Hyperloop</h3>
+            </div>
+          </a>
         </div>
 
-        <div class="skills-grid">
-          <article class="card">
-            <h3>Tools</h3>
-            <ul class="tag-list tag-list--large">
-              <li>ROS2</li>
-              <li>PyTorch</li>
-              <li>MQTT</li>
-              <li>Gazebo</li>
-              <li>Isaac Sim</li>
-              <li>Isaac Lab</li>
-              <li>Ansys Fluent</li>
-              <li>Ansys Mechanical</li>
-              <li>Fusion 360</li>
-              <li>AutoCAD</li>
-              <li>LaTeX</li>
-            </ul>
-          </article>
-
-          <article class="card">
-            <h3>Languages</h3>
-            <ul class="tag-list tag-list--large">
-              <li>Python</li>
-            </ul>
-          </article>
-        </div>
-      </section>
-
-      <section class="section" id="contact">
-        <div class="section__header">
-          <h2>Contact</h2>
-          <p>Reach out for collaborations, opportunities, or questions.</p>
-        </div>
-        <div class="card contact-card">
-          <p>
-            <a href="mailto:harishs.1774@gmail.com">harishs.1774@gmail.com</a>
-          </p>
-          <p>
-            <a href="https://github.com/Harish-1774" target="_blank" rel="noreferrer"
-              >GitHub</a
-            >
-          </p>
-        </div>
+        
       </section>
     </main>
 
