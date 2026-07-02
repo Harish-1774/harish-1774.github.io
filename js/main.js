@@ -1,10 +1,5 @@
 const navToggle = document.querySelector(".nav__toggle");
 const navMenu = document.querySelector(".nav__menu");
-const yearEl = document.getElementById("year");
-
-if (yearEl) {
-  yearEl.textContent = String(new Date().getFullYear());
-}
 
 if (navToggle && navMenu) {
   navToggle.addEventListener("click", () => {
