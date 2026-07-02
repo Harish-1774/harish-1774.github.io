@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Harish — portfolio, projects, and contact."
+      content="Harish S — Aerospace Engineer building robotics software, automation systems, and simulation tools."
     />
-    <title>Harish | Portfolio</title>
+    <title>Harish S | Portfolio</title>
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
     <header class="site-header">
       <nav class="nav" aria-label="Main navigation">
-        <a class="nav__brand" href="#top">Harish</a>
+        <a class="nav__brand" href="#top">Harish S</a>
         <button
           class="nav__toggle"
           type="button"
@@ -24,6 +24,7 @@
         </button>
         <ul class="nav__menu" id="nav-menu">
           <li><a href="#about">About</a></li>
+          <li><a href="#experience">Experience</a></li>
           <li><a href="#projects">Projects</a></li>
           <li><a href="#skills">Skills</a></li>
           <li><a href="#contact">Contact</a></li>
@@ -33,11 +34,12 @@
 
     <main id="top">
       <section class="hero section">
-        <p class="hero__eyebrow">Portfolio</p>
-        <h1>Hi, I'm Harish.</h1>
+        <p class="hero__eyebrow">Aerospace Engineer · Robotics Software</p>
+        <h1>Hi, I'm Harish S.</h1>
         <p class="hero__lead">
-          Add a short introduction about who you are, what you build, and what
-          you're looking for.
+          I build robotics software stacks, factory automation systems, and
+          simulation-driven tools. Currently at Robotspace, working on linear
+          robots, production planning, and manufacturing optimization.
         </p>
         <div class="hero__actions">
           <a class="button button--primary" href="#projects">View projects</a>
@@ -48,45 +50,220 @@
       <section class="section" id="about">
         <div class="section__header">
           <h2>About</h2>
-          <p>Share your background, interests, and what you're working on.</p>
+          <p>Education and highlights from my work in aerospace and robotics.</p>
         </div>
-        <div class="card">
-          <p>
-            Replace this with a few paragraphs about your experience, education,
-            and goals. Keep it concise and easy to scan.
-          </p>
+
+        <div class="stack">
+          <article class="card">
+            <h3>Education</h3>
+            <dl class="education-list">
+              <div class="education-list__item">
+                <dt>B.Tech in Aerospace Engineering</dt>
+                <dd>Indian Institute of Technology Madras · CGPA 7.42 · 2025</dd>
+              </div>
+              <div class="education-list__item">
+                <dt>XII (CBSE)</dt>
+                <dd>Sudharsanam Vidyaashram · 92.2% · 2021</dd>
+              </div>
+              <div class="education-list__item">
+                <dt>X (CBSE)</dt>
+                <dd>Sudharsanam Vidyaashram · 95.4% · 2019</dd>
+              </div>
+            </dl>
+          </article>
+
+          <article class="card">
+            <h3>Achievements</h3>
+            <ul class="bullet-list">
+              <li>
+                Secured 2nd place in European Hyperloop Week for full-scale
+                technical work, representing IIT Madras and India in Zurich,
+                Switzerland.
+              </li>
+              <li>
+                Authored a research report on
+                <em>Analysis of Shock Waves in Hyperloop Systems</em>.
+              </li>
+              <li>
+                Filed a patent on using Connected Tube Configuration for
+                Hyperloop systems.
+              </li>
+            </ul>
+          </article>
         </div>
+      </section>
+
+      <section class="section" id="experience">
+        <div class="section__header">
+          <h2>Experience</h2>
+          <p>Professional work in robotics and manufacturing automation.</p>
+        </div>
+
+        <article class="card entry-card">
+          <div class="entry-card__header">
+            <div>
+              <h3>Robotspace</h3>
+            </div>
+            <p class="entry-card__date">Jun 2025 – Present</p>
+          </div>
+          <ul class="bullet-list">
+            <li>
+              Built the software stack for a 4-axis linear robot with four
+              modules integrated through MQTT.
+            </li>
+            <li>
+              Planned robot trajectories using Behaviour Trees and motion control
+              using Finite State Machines.
+            </li>
+            <li>
+              Deployed the stack on ioWare and integrated with FluidNC through
+              G-Codes for motor control.
+            </li>
+            <li>
+              Implemented an automated planning and scheduling system for factory
+              production planning.
+            </li>
+            <li>
+              Built a cutting plan optimization tool with Google OR-Tools for
+              tower manufacturing, reducing raw material wastage by 50%.
+            </li>
+            <li>
+              Deployed a PLC-based assembly verification system for manufacturing
+              lines at Schneider Electric.
+            </li>
+          </ul>
+        </article>
       </section>
 
       <section class="section" id="projects">
         <div class="section__header">
           <h2>Projects</h2>
-          <p>Highlight work you're proud of.</p>
+          <p>Research, robotics, and competition work from IIT Madras and beyond.</p>
         </div>
+
         <div class="grid">
           <article class="card project-card">
-            <h3>Project title</h3>
-            <p>Brief description of the project and the problem it solves.</p>
-            <ul class="tag-list">
-              <li>Tech</li>
-              <li>Stack</li>
+            <p class="project-card__meta">Imitation Learning · Isaac Lab</p>
+            <h3>Visual Pick and Place</h3>
+            <ul class="bullet-list">
+              <li>
+                Implemented DAgger training for a colour-based pick-and-place task
+                with a Franka robot in Isaac Lab.
+              </li>
+              <li>
+                Mapped camera input to joint-angle output using a
+                ResNet18 + LSTM + MLP network.
+              </li>
+              <li>
+                Trained the simulation for 30 iterations with 20 rollouts and
+                5000 steps each.
+              </li>
             </ul>
-            <div class="project-card__links">
-              <a href="#" target="_blank" rel="noreferrer">Live demo</a>
-              <a href="#" target="_blank" rel="noreferrer">Source</a>
-            </div>
+            <ul class="tag-list">
+              <li>Isaac Lab</li>
+              <li>PyTorch</li>
+              <li>Imitation Learning</li>
+            </ul>
           </article>
 
           <article class="card project-card">
-            <h3>Another project</h3>
-            <p>Add more project cards by copying this block.</p>
-            <ul class="tag-list">
-              <li>Example</li>
+            <p class="project-card__meta">Bachelor's Thesis · Guide: Satadal G</p>
+            <h3>Multi-Agent Formation Control</h3>
+            <ul class="bullet-list">
+              <li>
+                Analyzed guidance algorithms for multi-agent formation control
+                using MAVROS and Gazebo.
+              </li>
+              <li>
+                Implemented and verified the Detective Deviated Pursuit algorithm
+                in MATLAB.
+              </li>
+              <li>
+                Used Crazyflie 2.1 drones with a Lighthouse positioning system to
+                implement formation algorithms.
+              </li>
             </ul>
-            <div class="project-card__links">
-              <a href="#" target="_blank" rel="noreferrer">Live demo</a>
-              <a href="#" target="_blank" rel="noreferrer">Source</a>
-            </div>
+            <ul class="tag-list">
+              <li>ROS2</li>
+              <li>Gazebo</li>
+              <li>MAVROS</li>
+            </ul>
+          </article>
+
+          <article class="card project-card">
+            <p class="project-card__meta">Mechanical Head · Aug 2023 – Jul 2024</p>
+            <h3>Avishkar Hyperloop</h3>
+            <ul class="bullet-list">
+              <li>
+                Led a team of 8 to engineer and build the mechanical systems of
+                the Hyperloop pod.
+              </li>
+              <li>
+                Secured 2nd place at European Hyperloop Week in Zurich,
+                Switzerland.
+              </li>
+              <li>
+                Proved turbulence due to SBLI in the acceleration phase travels
+                backward and becomes steady.
+              </li>
+              <li>
+                Ran structural simulations to keep chassis and aerodynamic shell
+                deformation below 0.5 mm.
+              </li>
+            </ul>
+            <ul class="tag-list">
+              <li>Ansys Mechanical</li>
+              <li>CFD</li>
+              <li>Hyperloop</li>
+            </ul>
+          </article>
+
+          <article class="card project-card">
+            <p class="project-card__meta">Project Member · Mar 2023 – Aug 2023</p>
+            <h3>Avishkar Hyperloop — CFD &amp; Patent</h3>
+            <ul class="bullet-list">
+              <li>
+                Performed dynamic CFD simulations on pod–tube configurations to
+                analyze drag variation.
+              </li>
+              <li>
+                Observed a 56% drag reduction at 0.4 Mach in a connected tube
+                configuration versus a single tube.
+              </li>
+              <li>
+                Filed a patent on the connected tube configuration for Hyperloop
+                systems.
+              </li>
+            </ul>
+            <ul class="tag-list">
+              <li>Ansys Fluent</li>
+              <li>CFD</li>
+              <li>Patent</li>
+            </ul>
+          </article>
+
+          <article class="card project-card">
+            <p class="project-card__meta">Project Head · May 2023 – Mar 2024</p>
+            <h3>Aero Club — Search &amp; Aid QuadPlane</h3>
+            <ul class="bullet-list">
+              <li>
+                Headed a team of 5 to design a QuadPlane for search-and-aid
+                operations over the ocean.
+              </li>
+              <li>
+                Developed Python scripts integrating MAVROS with ArduPilot SITL
+                and Gazebo.
+              </li>
+              <li>
+                Used OpenCV to detect subjects needing help and determine the
+                required flight direction.
+              </li>
+            </ul>
+            <ul class="tag-list">
+              <li>MAVROS</li>
+              <li>Gazebo</li>
+              <li>OpenCV</li>
+            </ul>
           </article>
         </div>
       </section>
@@ -94,20 +271,40 @@
       <section class="section" id="skills">
         <div class="section__header">
           <h2>Skills</h2>
-          <p>Tools and technologies you use.</p>
+          <p>Tools and languages I use across robotics, simulation, and design.</p>
         </div>
-        <ul class="tag-list tag-list--large">
-          <li>JavaScript</li>
-          <li>Python</li>
-          <li>HTML &amp; CSS</li>
-          <li>Git</li>
-        </ul>
+
+        <div class="skills-grid">
+          <article class="card">
+            <h3>Tools</h3>
+            <ul class="tag-list tag-list--large">
+              <li>ROS2</li>
+              <li>PyTorch</li>
+              <li>MQTT</li>
+              <li>Gazebo</li>
+              <li>Isaac Sim</li>
+              <li>Isaac Lab</li>
+              <li>Ansys Fluent</li>
+              <li>Ansys Mechanical</li>
+              <li>Fusion 360</li>
+              <li>AutoCAD</li>
+              <li>LaTeX</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <h3>Languages</h3>
+            <ul class="tag-list tag-list--large">
+              <li>Python</li>
+            </ul>
+          </article>
+        </div>
       </section>
 
       <section class="section" id="contact">
         <div class="section__header">
           <h2>Contact</h2>
-          <p>Let people know how to reach you.</p>
+          <p>Reach out for collaborations, opportunities, or questions.</p>
         </div>
         <div class="card contact-card">
           <p>

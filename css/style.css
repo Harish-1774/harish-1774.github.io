@@ -183,6 +183,87 @@ main {
   box-shadow: var(--shadow);
 }
 
+.card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.125rem;
+}
+
+.stack {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.education-list {
+  margin: 0;
+}
+
+.education-list__item {
+  margin-bottom: 1rem;
+}
+
+.education-list__item:last-child {
+  margin-bottom: 0;
+}
+
+.education-list dt {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.education-list dd {
+  margin: 0;
+  color: var(--muted);
+}
+
+.bullet-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--muted);
+}
+
+.bullet-list li + li {
+  margin-top: 0.5rem;
+}
+
+.entry-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.entry-card__org {
+  margin: 0.25rem 0 0;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.entry-card__date {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.project-card__meta {
+  margin: 0 0 0.5rem;
+  color: var(--accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.skills-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .skills-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
 .grid {
   display: grid;
   gap: 1.25rem;
@@ -195,17 +276,11 @@ main {
 }
 
 .project-card h3 {
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.75rem;
 }
 
-.project-card p {
-  margin: 0 0 1rem;
-  color: var(--muted);
-}
-
-.project-card__links {
-  display: flex;
-  gap: 1rem;
+.project-card .bullet-list {
+  margin-bottom: 1rem;
 }
 
 .tag-list {
@@ -259,5 +334,14 @@ main {
 
   .nav__menu.is-open {
     display: flex;
+  }
+
+  .entry-card__header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .entry-card__date {
+    white-space: normal;
   }
 }
