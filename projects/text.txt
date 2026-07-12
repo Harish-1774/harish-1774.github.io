@@ -1,0 +1,3 @@
+Avoding bias by sampling from aggregate dataset
+10 time steps sequences to have temporal connection
+Deterministic policy by deterministic single action by expert

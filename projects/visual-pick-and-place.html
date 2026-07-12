@@ -5,353 +5,280 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Visual pick-and-place with DAgger imitation learning — ResNet18 + LSTM policy trained in Isaac Lab on a Franka sorting task."
+      content="Pick-and-place with ACT-CVAE in Isaac Lab — action-chunking transformer with a CVAE style latent, trained from an IK expert and refined with DAgger."
     />
-    <title>Visual Pick and Place | Harish</title>
+    <title>Pick and Place using Imitation Learning | Harish</title>
     <link rel="stylesheet" href="../css/style.css?v=2" />
   </head>
   <body>
     <main class="project-page project-page--article">
       <a class="back-link" href="../index.html#projects">&larr; Back to projects</a>
 
-      <img
-        class="project-hero-image"
-        src="../assets/projects/visual-pick-place.svg"
-        alt="Visual Pick and Place project"
-        width="800"
-        height="500"
-      />
-
       <header class="project-page__header">
-        <p class="project-card__meta">Imitation Learning · Isaac Lab · Robomimic</p>
-        <h1>Visual Pick and Place</h1>
+        <p class="project-card__meta">Imitation Learning · Isaac Lab · ACT-CVAE</p>
+        <h1>Pick and Place using Imitation Learning</h1>
+
+        <video
+          class="project-hero-video"
+          controls
+          playsinline
+          preload="metadata"
+        >
+          <source
+            src="../assets/projects/imitation_learning.mp4"
+            type="video/mp4"
+          />
+          Your browser does not support the video tag.
+        </video>
+
         <p class="project-page__intro">
-          A visuomotor Franka Panda policy that sorts coloured cubes into
-          matching bins using only RGB cameras and proprioception. Trained with
-          DAgger (Dataset Aggregation) in Isaac Lab to correct covariate shift,
-          with an IK-based expert oracle providing labels during rollouts.
+          A pick-and-place policy for a Franka Panda in Isaac Lab.
+          The student is an action-chunking transformer with a CVAE style
+          latent (ACT-CVAE): it reads a short history of low-dimensional state
+          and predicts a chunk of end-effector delta actions. Training starts
+          from an IK expert, then optionally continues with state-based DAgger
+          to correct covariate shift.
         </p>
       </header>
 
       <section class="project-page__section">
         <h2>Task</h2>
         <p class="project-page__text">
-          A tabletop scene contains a Franka Panda arm, two coloured cubes (blue
-          and red) with randomized poses, and two colour-matched sorting bins in
-          disjoint workspace regions. Two 256×256 RGB cameras provide observations:
-          a fixed table camera for global layout and a wrist camera for grasp
-          alignment.
+          The scene has one coloured cube and one matching bin on a table,
+          randomized within the reachable workspace. A Franka Panda must grasp
+          the cube and place it in the bin. Success is when the cube settles
+          inside the bin within spatial tolerances.
         </p>
         <p class="project-page__text">
-          The student policy must place each cube in its matching bin using only
-          cameras and 18D proprioception. During training, an expert oracle
-          accesses privileged ground-truth object and bin poses — information
-          unavailable at deployment.
-        </p>
-      </section>
-
-      <section class="project-page__section">
-        <h2>The Covariate Shift Problem</h2>
-        <p class="project-page__text">
-          Behavioural cloning on expert demonstrations alone suffers from
-          <strong>distribution shift</strong>. The student executes its own
-          imperfect actions, drifts into states the expert never visited, and
-          small errors compound. DAgger (Dataset Aggregation, Ross et al. 2011)
-          addresses this iteratively by collecting data on the student's actual
-          trajectory while labeling every state with the expert's corrective action.
+          The policy is <strong>state-based</strong>: it sees proprioception,
+          end-effector pose, and object/bin poses — not camera images. That
+          keeps the model compact and focuses the experiment on action chunking
+          and CVAE behaviour rather than visual representation learning.
         </p>
       </section>
 
       <section class="project-page__section">
-        <h2>DAgger Algorithm</h2>
+        <h2>End-to-End Pipeline</h2>
         <p class="project-page__text">
-          At iteration <em>i</em>, the algorithm:
+          The ACT-CVAE training run uses end-effector position and yaw in the
+          state, with a simpler no-yaw variant available for comparison. Both
+          follow the same stages:
         </p>
         <ol class="mission-list">
           <li>
-            Rolls out the current student policy in the environment with
-            <strong>β-mixed execution</strong>.
+            <strong>Collect</strong> privileged IK expert demos at 60 Hz.
           </li>
           <li>
-            Queries the expert oracle for the correct action at every visited
-            state, regardless of who executed the previous action.
+            <strong>Downsample</strong> ×2 to 30 Hz so training sequences cover
+            more wall-clock motion without lengthening the observation window.
           </li>
           <li>
-            Appends all <code>(observation, expert_action)</code> pairs to a
-            monotonically growing aggregate dataset.
+            <strong>Train ACT-CVAE</strong> with behavioural cloning.
           </li>
           <li>
-            Updates the student with a fixed number of supervised gradient steps
-            on the full aggregate.
+            <strong>Optional DAgger</strong> warm-started from the BC checkpoint.
           </li>
           <li>
-            Saves a new checkpoint and repeats with a lower β.
+            <strong>Evaluate</strong> with closed-loop rollouts.
           </li>
         </ol>
+      </section>
 
-        <h3 class="project-page__subheading">β-mixed rollouts</h3>
+      <section class="project-page__section">
+        <h2>Expert Demonstrations</h2>
         <p class="project-page__text">
-          At each timestep, with probability β the environment executes the
-          expert action; otherwise it executes the student action:
-        </p>
-        <p class="project-page__formula">
-          rollout_action = expert_action &nbsp; if random() &lt; β<br />
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= student_action &nbsp; otherwise
-        </p>
-        <p class="project-page__text">
-          The stored training label is <strong>always</strong> the expert action
-          queried from privileged state. This is the core DAgger insight: learn
-          what the expert <em>would</em> do in states the student actually
-          visits.
+          Labels come from a privileged differential-IK pick-and-place solver —
+          a finite-state machine, not a learned policy:
+          approach → descend → grasp (with dwell) → lift → approach place →
+          descend → release → lift after. Grasp yaw is aligned to the cube yaw
+          when available. End-effector speed defaults to 0.75 m/s.
         </p>
         <p class="project-page__text">
-          β is capped at <strong>0.9</strong> on iteration 1 so the first round
-          is not pure-expert (which would only duplicate the seed dataset). Two
-          schedules are supported:
+          Demos are stored as <strong>scaled EE deltas</strong>:
+          (target − current) × 10 for xyz and yaw, plus a binary gripper
+          command. Scaling keeps small metric deltas in a numerically friendly
+          range for regression. Default collection uses 100 episodes across 16
+          parallel envs, horizon 2000 steps.
         </p>
+
+        <h3 class="project-page__subheading">Observation space</h3>
         <ul class="bullet-list">
           <li>
-            <strong>Linear</strong> (used in the 30-iteration run):
-            β = 1 − (i − 1) / N, decreasing from 0.9 to ~0.03 over 30 iterations.
+            <strong>Agent (13D):</strong> proprioception 9D (joint pos/vel) +
+            EE xyz 3D + EE yaw 1D.
           </li>
           <li>
-            <strong>Inverse square root</strong>: β = 1 / √i — a slower decay
-            that keeps more expert assistance in later rounds.
+            <strong>Objects (7D):</strong> cube xyz (EE frame) + cube yaw (robot
+            frame) + bin xyz (EE frame).
+          </li>
+          <li>
+            <strong>Total state ≈ 20D</strong> per timestep — no cameras.
           </li>
         </ul>
 
-        <h3 class="project-page__subheading">Expert oracle</h3>
+        <h3 class="project-page__subheading">Action space</h3>
         <p class="project-page__text">
-          The registered solver <code>ik_pick_place</code> is a privileged,
-          model-based controller — not a learned policy. It:
-        </p>
-        <ul class="bullet-list">
-          <li>
-            Parses ground-truth object and bin poses into colour-matched
-            pick-place pairs.
-          </li>
-          <li>
-            Runs a finite-state machine:
-            APPROACH_PICK → DESCEND_PICK → GRASP → LIFT → APPROACH_PLACE →
-            DESCEND_PLACE → RELEASE → LIFT_AFTER.
-          </li>
-          <li>
-            Tracks TCP waypoints with differential IK (DLS) at 0.75 m/s.
-          </li>
-          <li>
-            Commands a binary gripper with dwell timers (15 steps at grasp, 25
-            at release).
-          </li>
-        </ul>
-        <p class="project-page__text">
-          During DAgger rollouts, pick waypoints are refreshed every pre-grasp
-          step so expert labels track cubes the student may have nudged before
-          grasping.
-        </p>
-
-        <h3 class="project-page__subheading">Dataset aggregation</h3>
-        <p class="project-page__text">
-          The aggregate HDF5 starts as a copy of the seed expert dataset
-          (<code>ik_expert_demos_vis_robomimic.hdf5</code>). Each DAgger
-          episode is appended in Robomimic format with student observations
-          (<code>obs</code>, <code>table_cam</code>, <code>wrist_cam</code>)
-          and expert actions as labels. The dataset grows monotonically — in the
-          completed 30-iteration run it expanded from 85 to 685 demonstrations.
-        </p>
-
-        <h3 class="project-page__subheading">Implementation</h3>
-        <p class="project-page__text">
-          The DAgger loop lives in <code>scripts/train_dagger.py</code>, with
-          rollout collection in <code>dagger_collector.py</code>, HDF5
-          management in <code>dagger_dataset.py</code>, and per-iteration BC
-          training in <code>dagger_trainer.py</code>. Rollouts abort early if
-          the expert makes no progress for 500 steps, preventing the aggregate
-          from filling with low-value stuck trajectories.
+          The policy outputs <strong>5D</strong>: Δxyz + Δyaw + gripper. At
+          deployment an IK converter maps EE deltas to the environment's
+          relative joint-position arm action plus gripper. A simpler no-yaw
+          variant drops yaw (4D actions, 12D agent + 6D objects).
         </p>
       </section>
 
       <section class="project-page__section">
-        <h2>Neural Network Architecture</h2>
+        <h2>ACT-CVAE Network</h2>
         <p class="project-page__text">
-          The student is a Robomimic <strong>BC-RNN</strong> visuomotor policy
-          configured in <code>bc_rnn_image_il.json</code>. The full data flow:
+          The policy is an Action Chunking Transformer with a CVAE style
+          encoder — following the ACT idea of predicting a short future action
+          sequence rather than a single step, which reduces compounding error.
         </p>
         <p class="project-page__formula">
-          table_cam (256²) ──► ResNet18 ──► SpatialSoftmax(16 kp) ──► 32D<br />
-          wrist_cam  (256²) ──► ResNet18 ──► SpatialSoftmax(16 kp) ──► 32D<br />
-          proprio (18D) ──► passthrough<br />
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ concat → 82D → LSTM(400) → Linear(400→8)
+          [proprio ∥ objects] × T=16<br />
+          &nbsp;&nbsp;→ Linear–ReLU–Linear → width 128<br />
+          &nbsp;&nbsp;→ Transformer encoder (2 layers, 4 heads)<br />
+          &nbsp;&nbsp;→ Transformer decoder (2 layers, chunk queries)<br />
+          &nbsp;&nbsp;→ Linear–ReLU–Linear → (chunk size 4, action dim 5)<br />
+          <br />
+          CVAE: action chunk → style encoder (2 layers) → z ∈ R³²<br />
+          Training: L = MSE(actions) + 10 · KL(q(z|a) ∥ N(0,I))<br />
+          Inference: z = 0 (prior mean) → deterministic policy
         </p>
 
-        <h3 class="project-page__subheading">Visual encoders (×2, separate weights)</h3>
+        <h3 class="project-page__subheading">Encoder</h3>
         <ul class="bullet-list">
           <li>
-            <strong>Backbone: ResNet18Conv</strong> — standard ResNet-18 with
-            4 residual stages (2 blocks each, 8 blocks total). Trained from
-            scratch (<code>pretrained: false</code>) because Isaac Sim renders
-            differ substantially from ImageNet.
+            Concatenate proprio and object state each step, project to a
+            <strong>128-dimensional</strong> embedding.
           </li>
           <li>
-            <strong>Input:</strong> random 224×224 crop from 256×256 during
-            training (<code>CropRandomizer</code>); CHW float [0, 1] at
-            inference.
+            Add learned positional embeddings over an observation window of
+            <strong>16 timesteps</strong> — temporal context without an LSTM
+            hidden state.
           </li>
           <li>
-            <strong>Pooling: SpatialSoftmax</strong> with 16 keypoints — maps
-            spatial feature maps to 16 (x, y) coordinates, producing a
-            compact 32D vector per camera that preserves spatial grounding
-            without flattening the entire feature map.
-          </li>
-          <li>
-            <strong>Why two cameras?</strong> The table camera captures bin and
-            object layout globally; the wrist camera provides close-range grasp
-            alignment. Each has its own encoder so the network learns
-            camera-specific features.
+            Run a <strong>2-layer</strong> Transformer encoder (4 heads, FFN
+            256, GELU, dropout 0.1). Compact width suits ~20D state rather
+            than vision features.
           </li>
         </ul>
 
-        <h3 class="project-page__subheading">Proprioception (18D)</h3>
-        <p class="project-page__text">
-          Concatenated relative joint positions and velocities for the 7 arm
-          joints plus 2 gripper joints. Proprioception is passed through without
-          an encoder — it gives short-horizon dynamics (velocity, gripper state)
-          that cameras alone cannot provide at 60 Hz control.
-        </p>
-
-        <h3 class="project-page__subheading">LSTM recurrence</h3>
+        <h3 class="project-page__subheading">Decoder (action chunking)</h3>
         <ul class="bullet-list">
-          <li><strong>Type:</strong> LSTM, unidirectional</li>
-          <li><strong>Layers:</strong> 1</li>
-          <li><strong>Hidden dimension:</strong> 400</li>
-          <li><strong>Sequence length:</strong> 10 timesteps</li>
-          <li><strong>Input:</strong> 82D fused vector per timestep (32 + 32 + 18)</li>
-          <li><strong>Mode:</strong> closed-loop (observations fed each step, not open-loop)</li>
+          <li>
+            Learned query embeddings of length <strong>4</strong> cross-attend
+            to encoder memory.
+          </li>
+          <li>
+            A small MLP head maps each query to one action in the 4-step chunk.
+          </li>
+          <li>
+            Predicting a short horizon of future actions lets the policy plan
+            through grasp/release transitions instead of reacting myopically
+            one step at a time.
+          </li>
         </ul>
+
+        <h3 class="project-page__subheading">CVAE style latent</h3>
         <p class="project-page__text">
-          Manipulation is temporally extended — grasp timing, gripper state, and
-          motion history matter. A 10-step LSTM context captures this without
-          the compute cost of a Transformer. One layer keeps the model small
-          enough for real-time inference during Isaac Lab rollouts.
+          A style encoder (CLS token + projected action tokens, 2 Transformer
+          layers) produces μ and log σ² for a latent
+          <strong>z ∈ ℝ³²</strong>. During training, z is sampled from q(z|a)
+          and concatenated onto encoder memory so the decoder is conditioned on
+          demonstration “style.” The loss adds a KL term with weight 10 —
+          strong prior regularization in the ACT spirit.
+        </p>
+        <p class="project-page__text">
+          At inference, <strong>z is set to 0</strong> (the prior mean). That
+          keeps deployment deterministic: the expert itself is near-deterministic
+          (scripted IK), so a single mode is preferred over sampling multimodal
+          actions online.
         </p>
 
-        <h3 class="project-page__subheading">Policy head</h3>
+        <h3 class="project-page__subheading">Temporal ensembling</h3>
         <p class="project-page__text">
-          <code>actor_layer_dims: []</code> in the Robomimic config means
-          <strong>no hidden MLP layers</strong> — a single linear map from the
-          400D LSTM hidden state directly to the 8D action output. This keeps
-          the policy lightweight; the representational capacity sits in the
-          ResNet encoders and LSTM rather than a deep action head.
+          At runtime the policy keeps the last 16 observations. With temporal
+          ensembling enabled, it re-predicts a chunk every step and blends
+          overlapping predictions with an exponential weight (coeff 0.01) so
+          newer predictions dominate — smoothing end-effector motion without
+          open-loop chunk execution.
         </p>
-        <p class="project-page__text">
-          <strong>Action space (8D):</strong> 7 relative arm joint position
-          deltas + 1 binary gripper command. Relative actions match the expert
-          demonstration format and generalize better across joint configurations
-          than absolute joint targets.
-        </p>
-
-        <h3 class="project-page__subheading">Layer count summary</h3>
-        <ul class="bullet-list">
-          <li>2 × ResNet18 visual backbones (independent weights)</li>
-          <li>2 × SpatialSoftmax pooling layers (16 keypoints each)</li>
-          <li>1 × LSTM layer (400 hidden units)</li>
-          <li>1 × linear output layer (400 → 8)</li>
-          <li>No additional hidden MLP between LSTM and output</li>
-        </ul>
       </section>
 
       <section class="project-page__section">
         <h2>Training Process</h2>
 
-        <h3 class="project-page__subheading">Phase 1 — Expert seed demonstrations</h3>
+        <h3 class="project-page__subheading">Dataset sampling</h3>
         <p class="project-page__text">
-          Before DAgger, visuomotor expert trajectories are collected with the
-          IK solver. Only successful episodes (both cubes in matching bins) are
-          saved. Observations include proprioception, <code>table_cam</code>,
-          and <code>wrist_cam</code> — the same keys the student uses at
-          deployment. The HDF5 is restructured into Robomimic format to produce
-          the seed dataset.
+          Training examples are drawn from the full demonstration set. For each
+          end time t, the loader builds an observation window spanning the
+          previous 16 steps (left-padded at episode starts) and an action chunk
+          of the next 4 steps, with pad masks where needed. States and actions
+          are z-score normalized from train-split statistics; distances can be
+          scaled to centimetres (×100).
+        </p>
+        <p class="project-page__text">
+          Sampling from the aggregate of all demos (and later DAgger data)
+          avoids overfitting to a narrow subset of trajectories. Near-pick
+          frames can be upweighted (boost ×5 within 0.10 m) so grasp alignment
+          gets more gradient signal.
         </p>
 
-        <h3 class="project-page__subheading">Phase 2 — Behavioural cloning warm-start</h3>
-        <p class="project-page__text">
-          DAgger requires an initial policy checkpoint capable of producing
-          coherent (if imperfect) rollouts. A BC-RNN policy is trained on the
-          seed dataset via Robomimic's standard training script. This warm-start
-          checkpoint becomes the student for DAgger iteration 1.
-        </p>
-
-        <h3 class="project-page__subheading">Phase 3 — DAgger iterations</h3>
-        <p class="project-page__text">
-          Each iteration performs three steps:
-        </p>
-        <ol class="mission-list">
-          <li>
-            <strong>Collect rollouts</strong> — 20 episodes (default) with the
-            current checkpoint, β-mixed execution, expert relabeling on every
-            step. Max horizon 2500 steps (~42 s at 60 Hz control).
-          </li>
-          <li>
-            <strong>Append to aggregate</strong> — labeled episodes written to
-            the growing HDF5. Failures are included; expert labels remain valid
-            corrections even on unsuccessful trajectories.
-          </li>
-          <li>
-            <strong>Train</strong> — 5000 BC gradient steps on the entire
-            aggregate dataset. Weights warm-start from the previous iteration's
-            checkpoint. New checkpoint saved as <code>dagger_iter_N.pth</code>.
-          </li>
-        </ol>
-
-        <h3 class="project-page__subheading">Hyperparameters</h3>
+        <h3 class="project-page__subheading">Behavioural cloning</h3>
         <ul class="bullet-list">
-          <li><strong>DAgger iterations:</strong> 30 (completed run)</li>
-          <li><strong>Episodes per iteration:</strong> 20</li>
-          <li><strong>Gradient steps per iteration:</strong> 5000</li>
-          <li><strong>Rollout horizon:</strong> 2500 steps</li>
-          <li><strong>β schedule:</strong> linear, β_start = 0.9</li>
-          <li><strong>Loss:</strong> L2 on actions (deterministic regression; expert is near-deterministic)</li>
-          <li><strong>Optimizer:</strong> Adam, learning rate 1×10⁻⁴</li>
-          <li><strong>Batch size:</strong> 32 (config default)</li>
-          <li><strong>Sequence length:</strong> 10 (aligned with LSTM horizon)</li>
-          <li><strong>Control rate:</strong> 60 Hz (120 Hz sim, decimation 2)</li>
-          <li><strong>Episode timeout:</strong> 45 s</li>
-        </ul>
-
-        <h3 class="project-page__subheading">Data loading</h3>
-        <p class="project-page__text">
-          Proprioception is cached in memory (<code>hdf5_cache_mode: low_dim</code>)
-          while RGB images are streamed from disk. This keeps RAM usage manageable
-          as the aggregate dataset grows with image data across iterations. Random
-          224×224 crops from 256×256 images provide mild augmentation during
-          training.
-        </p>
-
-        <h3 class="project-page__subheading">Training results (30-iteration run)</h3>
-        <ul class="bullet-list">
-          <li>
-            Aggregate dataset grew from <strong>85 → 685</strong> demonstrations
-            (+20 per iteration).
-          </li>
-          <li>
-            L2 training loss decreased from <strong>0.0045</strong> (iter 1) to
-            <strong>0.0014</strong> (iter 7), then rose as more on-policy
-            failure data accumulated at low β.
-          </li>
-          <li>
-            Rollout success rate stayed at <strong>18–20 / 20</strong> while β
-            ≥ 0.5, then dropped as student execution dominated (0 / 20 at
-            iterations 24–30 when β ≈ 0.03).
-          </li>
-          <li>
-            Each 5000-step training phase took ~10 s on GPU.
-          </li>
+          <li><strong>Epochs:</strong> 150</li>
+          <li><strong>Batch size:</strong> 64</li>
+          <li><strong>Optimizer:</strong> Adam, lr = 1×10⁻⁴</li>
+          <li><strong>Loss:</strong> MSE on action chunks + 10 × KL (CVAE)</li>
+          <li><strong>Hidden dim / heads:</strong> 128 / 4</li>
+          <li><strong>Encoder / decoder layers:</strong> 2 / 2</li>
+          <li><strong>Seq length / chunk size:</strong> 16 / 4</li>
         </ul>
         <p class="project-page__text">
-          The late-iteration success drop reflects the intentional shift toward
-          fully on-policy rollouts: the student visits harder states without
-          expert intervention, providing corrective labels for those regions in
-          the aggregate even when episodes fail.
+          On a completed single-yaw ACT-CVAE run, train loss fell from roughly
+          0.70 to ~0.008 over 150 epochs.
         </p>
+
+        <h3 class="project-page__subheading">Optional state DAgger</h3>
+        <p class="project-page__text">
+          After BC, the same ACT-CVAE weights can be refined with state DAgger:
+          β-mixed rollouts, expert labels on every visited state, append to a
+          growing aggregate dataset, then a fixed number of gradient steps on
+          the full set. Defaults: 5 iterations × 20 episodes × 2000 grad steps,
+          β starting at 1.0, 10 parallel envs. Sampling from the aggregate keeps
+          earlier expert coverage in the mix and reduces bias toward the latest
+          on-policy batch.
+        </p>
+      </section>
+
+      <section class="project-page__section">
+        <h2>Why These Design Choices</h2>
+        <ul class="bullet-list">
+          <li>
+            <strong>Action chunks (4)</strong> — classic ACT fix for compounding
+            error on temporally extended manipulation.
+          </li>
+          <li>
+            <strong>Obs window (16)</strong> — explicit history without LSTM
+            state; enough context for approach and grasp timing.
+          </li>
+          <li>
+            <strong>Compact transformer (128, 2+2)</strong> — matched to
+            low-dim state, fast enough for closed-loop Isaac Lab rollouts.
+          </li>
+          <li>
+            <strong>CVAE with z = 0 at test</strong> — capacity for multimodal
+            demos during training, deterministic control at deploy because the
+            expert itself is deterministic.
+          </li>
+          <li>
+            <strong>EE-delta labels + IK</strong> — policy reasons in Cartesian
+            space; joints are recovered by a fixed converter.
+          </li>
+          <li>
+            <strong>60 Hz → 30 Hz downsample</strong> — longer physical horizon
+            per sequence without growing the observation window.
+          </li>
+        </ul>
       </section>
 
       <section class="project-page__section">
@@ -359,11 +286,11 @@
         <ul class="tag-list tag-list--large">
           <li>Isaac Lab</li>
           <li>Isaac Sim</li>
-          <li>Robomimic</li>
           <li>PyTorch</li>
+          <li>ACT</li>
+          <li>CVAE</li>
+          <li>Transformers</li>
           <li>DAgger</li>
-          <li>ResNet18</li>
-          <li>LSTM</li>
           <li>Franka Panda</li>
           <li>Differential IK</li>
         </ul>

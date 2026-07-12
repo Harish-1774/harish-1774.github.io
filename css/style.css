@@ -352,8 +352,9 @@ main {
   height: auto;
 }
 
-.project-page__header {
-  margin-bottom: 2rem;
+.project-page__header .project-hero-video {
+  margin-top: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .project-page__header h1 {
