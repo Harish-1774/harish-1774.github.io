@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Pick-and-place with ACT-CVAE in Isaac Lab — action-chunking transformer with a CVAE style latent, trained from an IK expert and refined with DAgger."
+      content="Single-box pick-and-place with ACT-CVAE in Isaac Lab — action-chunking transformer with a CVAE latent, EE position and yaw (no quaternion), trained from an IK expert and refined with DAgger."
     />
     <title>Pick and Place using Imitation Learning | Harish</title>
-    <link rel="stylesheet" href="../css/style.css?v=2" />
+    <link rel="stylesheet" href="../css/style.css?v=3" />
   </head>
   <body>
     <main class="project-page project-page--article">
@@ -32,48 +32,47 @@
         </video>
 
         <p class="project-page__intro">
-          A pick-and-place policy for a Franka Panda in Isaac Lab.
-          The student is an action-chunking transformer with a CVAE style
+          A single-box pick-and-place policy for a Franka Panda in Isaac Lab.
+          The student is an action-chunking transformer with a CVAE-style
           latent (ACT-CVAE): it reads a short history of low-dimensional state
-          and predicts a chunk of end-effector delta actions. Training starts
-          from an IK expert, then optionally continues with state-based DAgger
-          to correct covariate shift.
+          — end-effector position and yaw, not a quaternion — and predicts a
+          chunk of EE-delta actions. Training starts from an IK expert, then
+          continues with state-based DAgger to correct covariate shift.
         </p>
       </header>
 
       <section class="project-page__section">
         <h2>Task</h2>
         <p class="project-page__text">
-          The scene has one coloured cube and one matching bin on a table,
-          randomized within the reachable workspace. A Franka Panda must grasp
-          the cube and place it in the bin. Success is when the cube settles
-          inside the bin within spatial tolerances.
+          The scene has <strong>one coloured cube</strong> and
+          <strong>one matching bin</strong> on a table, randomized within the
+          reachable workspace. A Franka Panda must grasp the cube and place it
+          in the bin. Success is when the cube settles inside the bin within
+          spatial tolerances.
         </p>
         <p class="project-page__text">
           The policy is <strong>state-based</strong>: it sees proprioception,
-          end-effector pose, and object/bin poses — not camera images. That
-          keeps the model compact and focuses the experiment on action chunking
-          and CVAE behaviour rather than visual representation learning.
+          end-effector pose (xyz + yaw), and object/bin poses — not camera
+          images. That keeps the model compact and focuses the experiment on
+          action chunking and CVAE behaviour rather than visual representation
+          learning.
         </p>
       </section>
 
       <section class="project-page__section">
         <h2>End-to-End Pipeline</h2>
-        <p class="project-page__text">
-          The ACT-CVAE training run uses end-effector position and yaw in the
-          state, with a simpler no-yaw variant available for comparison. Both
-          follow the same stages:
-        </p>
         <ol class="mission-list">
           <li>
-            <strong>Collect</strong> privileged IK expert demos at 60 Hz.
+            <strong>Collect</strong> privileged IK expert demos at 60 Hz
+            (100 episodes, 16 parallel envs, horizon 2000).
           </li>
           <li>
             <strong>Downsample</strong> ×2 to 30 Hz so training sequences cover
             more wall-clock motion without lengthening the observation window.
           </li>
           <li>
-            <strong>Train ACT-CVAE</strong> with behavioural cloning.
+            <strong>Train ACT-CVAE</strong> with behavioural cloning
+            (z-score normalization, cartesian distances scaled ×100).
           </li>
           <li>
             <strong>Optional DAgger</strong> warm-started from the BC checkpoint.
@@ -90,15 +89,14 @@
           Labels come from a privileged differential-IK pick-and-place solver —
           a finite-state machine, not a learned policy:
           approach → descend → grasp (with dwell) → lift → approach place →
-          descend → release → lift after. Grasp yaw is aligned to the cube yaw
-          when available. End-effector speed defaults to 0.75 m/s.
+          descend → release → lift after. Grasp yaw is aligned to the cube yaw.
+          End-effector speed defaults to 0.75 m/s.
         </p>
         <p class="project-page__text">
           Demos are stored as <strong>scaled EE deltas</strong>:
           (target − current) × 10 for xyz and yaw, plus a binary gripper
           command. Scaling keeps small metric deltas in a numerically friendly
-          range for regression. Default collection uses 100 episodes across 16
-          parallel envs, horizon 2000 steps.
+          range for regression.
         </p>
 
         <h3 class="project-page__subheading">Observation space</h3>
@@ -112,7 +110,8 @@
             frame) + bin xyz (EE frame).
           </li>
           <li>
-            <strong>Total state ≈ 20D</strong> per timestep — no cameras.
+            <strong>Total state ≈ 20D</strong> per timestep — no cameras, no
+            quaternions.
           </li>
         </ul>
 
@@ -120,15 +119,14 @@
         <p class="project-page__text">
           The policy outputs <strong>5D</strong>: Δxyz + Δyaw + gripper. At
           deployment an IK converter maps EE deltas to the environment's
-          relative joint-position arm action plus gripper. A simpler no-yaw
-          variant drops yaw (4D actions, 12D agent + 6D objects).
+          relative joint-position arm action plus gripper.
         </p>
       </section>
 
       <section class="project-page__section">
         <h2>ACT-CVAE Network</h2>
         <p class="project-page__text">
-          The policy is an Action Chunking Transformer with a CVAE style
+          The policy is an Action Chunking Transformer with a CVAE-style
           encoder — following the ACT idea of predicting a short future action
           sequence rather than a single step, which reduces compounding error.
         </p>
@@ -184,7 +182,7 @@
           layers) produces μ and log σ² for a latent
           <strong>z ∈ ℝ³²</strong>. During training, z is sampled from q(z|a)
           and concatenated onto encoder memory so the decoder is conditioned on
-          demonstration “style.” The loss adds a KL term with weight 10 —
+          demonstration style. The loss adds a KL term with weight 10 —
           strong prior regularization in the ACT spirit.
         </p>
         <p class="project-page__text">
@@ -213,13 +211,13 @@
           end time t, the loader builds an observation window spanning the
           previous 16 steps (left-padded at episode starts) and an action chunk
           of the next 4 steps, with pad masks where needed. States and actions
-          are z-score normalized from train-split statistics; distances can be
-          scaled to centimetres (×100).
+          are z-score normalized from train-split statistics; cartesian distances
+          are scaled to centimetres (×100).
         </p>
         <p class="project-page__text">
           Sampling from the aggregate of all demos (and later DAgger data)
           avoids overfitting to a narrow subset of trajectories. Near-pick
-          frames can be upweighted (boost ×5 within 0.10 m) so grasp alignment
+          frames are upweighted (boost ×5 within 0.10 m) so grasp alignment
           gets more gradient signal.
         </p>
 
@@ -234,13 +232,16 @@
           <li><strong>Seq length / chunk size:</strong> 16 / 4</li>
         </ul>
         <p class="project-page__text">
-          On a completed single-yaw ACT-CVAE run, train loss fell from roughly
-          0.70 to ~0.008 over 150 epochs.
+          On a completed single-box ACT-CVAE run, train loss fell from roughly
+          <strong>0.70 to 0.008</strong> over 150 epochs. Offline validation
+          reached EE-position MSE ≈ 0.005, yaw MSE ≈ 0.0003, and gripper-sign
+          agreement ≈ 99.9%. These are open-loop fit metrics; closed-loop
+          success is addressed by the DAgger stage below.
         </p>
 
-        <h3 class="project-page__subheading">Optional state DAgger</h3>
+        <h3 class="project-page__subheading">State DAgger</h3>
         <p class="project-page__text">
-          After BC, the same ACT-CVAE weights can be refined with state DAgger:
+          After BC, the same ACT-CVAE weights are refined with state DAgger:
           β-mixed rollouts, expert labels on every visited state, append to a
           growing aggregate dataset, then a fixed number of gradient steps on
           the full set. Defaults: 5 iterations × 20 episodes × 2000 grad steps,
@@ -253,6 +254,11 @@
       <section class="project-page__section">
         <h2>Why These Design Choices</h2>
         <ul class="bullet-list">
+          <li>
+            <strong>Single box + pos/yaw (no quat)</strong> — one cube and bin
+            with EE yaw instead of a quaternion keeps the observation compact
+            (~20D) while still exposing grasp orientation.
+          </li>
           <li>
             <strong>Action chunks (4)</strong> — classic ACT fix for compounding
             error on temporally extended manipulation.

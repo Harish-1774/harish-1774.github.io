@@ -8,7 +8,7 @@
       content="Bachelor's thesis on pursuit-based guidance for multi-agent formation control using APF, DDP, Crazyflie, and Crazyswarm."
     />
     <title>Pursuit Based Guidance for Multi-Agent Formation Control | Harish</title>
-    <link rel="stylesheet" href="../css/style.css?v=2" />
+    <link rel="stylesheet" href="../css/style.css?v=3" />
   </head>
   <body>
     <main class="project-page project-page--article">
@@ -36,9 +36,9 @@
         <p class="project-page__intro">
           A hybrid drone formation control system combining Artificial Potential
           Field (APF) for formation generation and collision avoidance with
-          Detective Deviated Pursuit (DDP) for efficient leader-follower
-          tracking — implemented and validated on seven Crazyflie 2.1 drones
-          using Crazyswarm and ROS.
+          Detective Deviated Pursuit (DDP; Segal et al., 2005) for efficient
+          leader-follower tracking — implemented and validated on seven
+          Crazyflie 2.1 drones using Crazyswarm and ROS.
         </p>
       </header>
 
@@ -214,10 +214,11 @@
         <h3 class="project-page__subheading">Python validation</h3>
         <p class="project-page__text">
           Six agents were simulated in a 2 × 2 m² workspace with random initial and
-          target positions. Parameters: v<sub>max</sub> = 0.1 m/s, collision
-          threshold r<sub>c</sub> = 0.28 m. Agents followed straight paths when
-          isolated and dynamically routed around neighbors when within the collision
-          radius.
+          target positions (v<sub>max</sub> = 0.1 m/s, r<sub>c</sub> = 0.28 m).
+          Agents followed straight paths when isolated and dynamically routed
+          around neighbors when within the collision radius. On the Crazyflie
+          stack the same APF law used dt = 0.05 s, v<sub>max</sub> = 0.3 m/s,
+          r<sub>c</sub> = 0.28 m, and a 0.01 m goal tolerance.
         </p>
       </section>
 

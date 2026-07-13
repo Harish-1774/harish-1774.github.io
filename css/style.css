@@ -315,6 +315,13 @@ main {
   color: var(--text);
 }
 
+.project-preview__subtitle {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
 .project-page {
   max-width: var(--max-width);
   margin: 0 auto;
